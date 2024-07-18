@@ -2,18 +2,27 @@
 // @name         Dreamwidth Update Page Fix
 // @namespace    http://tampermonkey.net/
 // @version      2024-07-17
-// @description  moves and formats navigation
+// @description  moves and formats navigation; adds "save draft" button; eliminates redundant buttons
 // @author       Bill in KCMO
-// @match        https://www.dreamwidth.org/update
+// @match        https://www.dreamwidth.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=dreamwidth.org
 // @grant        none
 // ==/UserScript==
 
+function tm_savedraft (){
+    const doc = window.document;
+    console.log(window);
+    console.log(document);
+    console.log(doc);
+    const s = doc.querySelector('select#security');
+    console.log(s);
+}
+
 (function () {
 
+        const user = Site.currentJournal;
 
     function createJournalIconLink() {
-        const user = Site.currentJournal;
         let a = [];
         a['user'] = document.createElement("a");
         a['user'].classList.add('journalName');
@@ -39,7 +48,7 @@
     }
 
     // Function to create list items with links
-    function createListItem(text, href, floatRight = false, icon) {
+    function createListItem(text, href, floatRight = false, icon, fn) {
         const li = document.createElement('li');
         if (floatRight) li.style.float = 'right';
         if (typeof href != 'undefined') {
@@ -55,6 +64,20 @@
         } else {
             li.appendChild(text);
         }
+        if(typeof fn != 'undefined') {
+            li.onclick = ()=>{
+                const doc = window.document;
+                const s = doc.querySelector('select#security');
+                s.focus();
+                s.value = 'private';
+                const b = doc.querySelector('input#formsubmit');
+                b.click();
+                setTimeout(()=>{
+                    history.back()
+                }, 2000);
+            };
+        }
+
         return li;
     }
 
@@ -81,13 +104,18 @@
 
         // Create new list items using the old links
         ul.appendChild(createListItem(createJournalIconLink()));
+        if (!window.location.pathname.includes('/update')) {
+            ul.appendChild(createListItem('Post', '', false, 'rate_review', ));
+        } else {
+            ul.appendChild(createListItem('Save Draft', `#" onclick="tm_savedraft(); return false;`, false, 'save_as', 'tm_savedraft'));
+        }
+
         ul.appendChild(createListItem('Reading Page', oldNavLinks[3].href, false, 'auto_stories'));
         ul.appendChild(createListItem('Search', oldNavLinks[6].href, false, 'search'));
         ul.appendChild(createListItem('Log Out', oldNavLinks[4].href, true, 'logout'));
         ul.appendChild(createListItem('Site Map', oldNavLinks[8].href, true, 'map'));
         ul.appendChild(createListItem('Settings', oldNavLinks[7].href, true, 'settings'));
         nav.appendChild(ul);
-
         // Replace the existing div[role=navigation] with the new ul
         oldNav.parentElement.replaceChild(nav, oldNav);
 
