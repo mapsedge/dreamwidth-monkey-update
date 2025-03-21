@@ -15,6 +15,7 @@
 	.open {
 		padding: .7rem;
 		height: 6rem;
+		display: block;
 	}
 }
 
