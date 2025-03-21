@@ -93,5 +93,9 @@ body {
 }
 
 #innerContents {padding: 1rem;}
-
+#TabsRow tbody #Tabs div {
+	border-radius: .5rem .5rem 0 0;
+	padding-left: .7rem;
+	padding-right: .7rem;
+}
 
