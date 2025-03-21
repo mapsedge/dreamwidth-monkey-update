@@ -12,11 +12,11 @@
 	list-style-type: none;
 	transition: all .5s;
 	display: none;
-	.open {
-		padding: .7rem;
-		height: 6rem;
-		display: block;
-	}
+}
+#dw-images-dropdown.open {
+	padding: .7rem;
+	height: 6rem;
+	display: block;
 }
 
 #tamper-nav li {
