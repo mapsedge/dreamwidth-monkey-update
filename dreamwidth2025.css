@@ -85,6 +85,7 @@ span.ljuser {
 	border: 1px solid gray;
 	padding: 2px;
 	transform: scale(.8);
+	cursor: pointer;
 }
 
 body {
@@ -92,10 +93,4 @@ body {
 	padding: 0;
 }
 
-#innerContents {padding: 1rem;}
-#TabsRow tbody #Tabs div {
-	border-radius: .5rem .5rem 0 0;
-	padding-left: .7rem;
-	padding-right: .7rem;
-}
 
