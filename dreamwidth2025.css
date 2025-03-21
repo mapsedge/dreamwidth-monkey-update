@@ -81,7 +81,7 @@ span.ljuser {
 }
 
 .dw-span-dropdown {
-	background-color: silver;
+	background: linear-gradient(to bottom, #ffffff, #eeeeee;
 	border: 1px solid gray;
 	padding: 2px;
 	transform: scale(.8);
