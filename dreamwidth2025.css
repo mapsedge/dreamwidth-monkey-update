@@ -80,6 +80,12 @@ span.ljuser {
 	display: table;
 }
 
+.dw-span-dropdown {
+	background-color: silver;
+	border: 1px solid gray;
+	padding: 2px;
+	transform: scale(.8);
+}
 
 body {
 	margin: 0;
