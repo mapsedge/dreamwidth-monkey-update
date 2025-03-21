@@ -1,0 +1,87 @@
+#tamper-nav li {
+	float: left;
+	position: relative;
+}
+	
+#tamper-nav li a {
+	color: black;
+	text-decoration: none;
+}
+	
+#tamper-nav li a:not(.specialpad) {
+	padding: .5rem 1rem;
+	color: black;clear
+}
+	
+#tamper-nav li:not(:first-child):not(:nth-child(6))::before {
+	content: "|";
+}
+	
+#tamper-nav li.right {
+	float: right;
+}
+	
+a.journalName {
+	font-weight: bold;
+	color: blue;
+	padding-right: 1em;
+	padding-left: .3rem;
+	transform: translateY(-.2rem);
+	display: inline-block;
+}
+
+i.journalIcon {
+	width: 17px;
+	height: 17px;
+	vertical-align: text-bottom;
+	border: 0;
+	padding-right: .5em;
+}
+
+span.ljuser {
+	white-space: nowrap;
+}
+
+.new-navigation-style {
+	font-family: sans-serif;
+	font-size: .65rem;
+	background: linear-gradient(to bottom, #eee, #eee, #ccc);
+	box-shadow: 0 0 .5rem 4px rgba(0,0,0, .3);
+	border-bottom: 1px solid gray;
+	margin: 0;
+	padding: 0;
+	top: 0;
+	width: 100vw;
+	box-sizing: border-box;
+	position: fixed;
+	li {
+		list-style-type: none;
+	}
+}
+
+.material-symbols-outlined {
+	font-size: 12px;
+	margin: 0 .3rem 0 0;
+	font-variation-settings:
+	'FILL' 0,
+	'wght' 400,
+	'GRAD' 0,
+	'opsz' 20
+}
+
+#content {
+	margin-top: 3rem;
+	margin-left: 1rem;
+}
+
+.clearfix::after {
+	content: "";
+	clear: both;
+	display: table;
+}
+
+
+body {
+	margin: 0;
+	padding: 0;
+}
