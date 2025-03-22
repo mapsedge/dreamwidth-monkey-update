@@ -14,10 +14,12 @@
 	outline: 0;
 }
 #dw-images-dropdown.open {
-	padding: .7rem;
 	height: 6rem;
 	border: 1px solid black;
 	outline: 0;
+}
+#dw-images-dropdown li {
+	padding: .2rem;
 }
 
 #tamper-nav li {
