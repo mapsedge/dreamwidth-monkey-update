@@ -5,8 +5,6 @@
 // @description See https://github.com/mapsedge/dreamwidth-monkey-update/blob/main/README.md for full details
 // @author	   	Bill in KCMO
 // @match		https://www.dreamwidth.org/*
-// @require     https://code.jquery.com/jquery-3.7.1.min.js
-// @require     https://code.jquery.com/ui/1.14.1/jquery-ui.min.js
 // @icon		https://www.google.com/s2/favicons?sz=64&domain=dreamwidth.org
 // @grant		none
 // ==/UserScript==
@@ -25,6 +23,7 @@ function tm_savedraft (){
 
 //	const Site = Site;
 //	const user = Site.currentJournal;
+    let $j = jQuery.noConflict();
 
 	var dw_tampering = (function () {
 
@@ -50,46 +49,74 @@ function tm_savedraft (){
 			},
 			//--------------------------------------------------------------------------------
 			loadImageList: async function(imgtxt, okayButton){
-				imgtxt = $(imgtxt);
-				let images = await dw_tampering.getImageList(); // Wait for getImageList to finish
-				let a = $(imgtxt).parent();
-				let b = $('<span class="material-symbols-outlined dw-span-dropdown" id="dw-span-dropdown">arrow_drop_down</span>');
-				b.on("click", function(){
-					$("#dw-images-dropdown").addClass('open');
-				});
-				a.append(b);
-				imgtxt = document.querySelector('#txtURL');
-				let btn = document.querySelector('#dw-span-dropdown');
+                // Wait for getImageList to finish
+                let images = await dw_tampering.getImageList();
 
-				let parentDoc = window.parent.document;
-				let btnOk = parentDoc.querySelector("#btnOk");
+                // Convert imgtxt to a DOM element
+                imgtxt = typeof imgtxt === "string" ? document.querySelector(imgtxt) : imgtxt;
 
+                // Create dropdown button
+                let b = document.createElement("span");
+                b.className = "material-symbols-outlined dw-span-dropdown";
+                b.id = "dw-span-dropdown";
+                b.textContent = "arrow_drop_down";
 
-				// Get the position of imgtxt within its parent
-				let rect = imgtxt.getBoundingClientRect();
+                // Click event to open dropdown
+                b.addEventListener("click", () => {
+                    document.querySelector("#dw-images-dropdown")?.classList.add("open");
+                });
 
-				// Position btn at the upper-right corner of imgtxt, subtracting btn width + 2
-				btn.style.position = 'absolute';
-				btn.style.right = `10px`;
-				btn.style.top = `16px`;
+                // Append dropdown button to parent
+                let a = imgtxt.parentElement;
+                a.appendChild(b);
 
-				let ul = $('<ul id="dw-images-dropdown" class="dropdown-default">');
-				$(images).each((a, b) => {
-					let li = $("<li>");
-					li.html(b.title);
-					li.attr('value', b.href);
-					ul.append(li);
-					li.on("click", function(){
-						imgtxt.value = $(this).attr('value');
-						$(imgtxt).trigger('blur');
-						$("#txtAlt").val($(this).html());
-						ul.removeClass("open");
-						console.log("[619794] \$(btnOk)", $(btnOk));
-						$(btnOk).show().css("visibility", "visible");
-					});
-				});
-				a.append(ul);
-				dw_tampering.getNewStyles(a);
+                // Get elements
+                imgtxt = document.querySelector("#txtURL");
+                let btn = document.querySelector("#dw-span-dropdown");
+
+                // Access parent document
+                let parentDoc = window.parent.document;
+                let btnOk = parentDoc.querySelector("#btnOk");
+
+                // Get imgtxt position within its parent
+                let rect = imgtxt.getBoundingClientRect();
+
+                // Position btn at the upper-right corner of imgtxt
+                btn.style.position = "absolute";
+                btn.style.right = "10px";
+                btn.style.top = "16px";
+
+                // Create dropdown menu
+                let ul = document.createElement("ul");
+                ul.id = "dw-images-dropdown";
+                ul.className = "dropdown-default";
+
+                // Populate dropdown
+                images.forEach((image) => {
+                    let li = document.createElement("li");
+                    li.textContent = image.title;
+                    li.setAttribute("value", image.href);
+                    ul.appendChild(li);
+
+                    // Click event for dropdown items
+                    li.addEventListener("click", function () {
+                        imgtxt.value = this.getAttribute("value");
+                        imgtxt.dispatchEvent(new Event("blur"));
+                        document.querySelector("#txtAlt").value = this.textContent;
+                        ul.classList.remove("open");
+
+                        console.log("[619794] btnOk", btnOk);
+                        if (btnOk) {
+                            btnOk.style.display = "block";
+                            btnOk.style.visibility = "visible";
+                        }
+                    });
+                });
+
+                // Append dropdown to parent
+                a.appendChild(ul);
+                dw_tampering.getNewStyles(a);
+
 			},
 			//--------------------------------------------------------------------------------
 			getImageList: async function() {
@@ -240,7 +267,7 @@ function tm_savedraft (){
 
 	setTimeout(() => {
 		setTimeout(()=>{
-			$("#xToolbar > table:nth-child(3) > tbody > tr > td:nth-child(3) > div > img").click();
+			// document.querySelector("#xToolbar > table:nth-child(3) > tbody > tr > td:nth-child(3) > div > img")?.click();
 		}
 		, 1000);
 
@@ -259,7 +286,7 @@ function tm_savedraft (){
 		// Get links from the existing div
 		const oldNavBar = document.querySelector('div.row div[role=navigation]');
         if(typeof oldNavBar != 'undefined' && oldNavBar != null) {
-            defineNewNavbar(oldNavBar);
+            defineNewNavbar(oldNavBar, $j);
         }
 
 		let img = document.querySelector("#tamper-nav img.journalIcon.ContextualPopup");
