@@ -27,10 +27,6 @@ function tm_savedraft (){
 
 	var dw_tampering = (function () {
 
-		// defined within the local scope
-		var privateMethod1 = function () { /* ... */ }
-		var privateProperty1 = 'foobar';
-
 		return {
 
 			//nested namespace with public properties
