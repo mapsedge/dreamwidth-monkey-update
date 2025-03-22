@@ -23,6 +23,9 @@
 	padding: .2rem;
 	cursor: pointer;
 }
+#dw-images-dropdown li:hover {
+	filter: invert(.5);
+}
 
 #tamper-nav li {
 	float: left;
