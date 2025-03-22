@@ -1,219 +1,276 @@
 // ==UserScript==
-// @name         Dreamwidth Update Page Fix
-// @namespace    http://tampermonkey.net/
-// @version      2024-07-17
-// @description  moves and formats navigation; adds "save draft" button; eliminates redundant buttons
-// @author       Bill in KCMO
-// @match        https://www.dreamwidth.org/*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=dreamwidth.org
-// @grant        none
+// @name 		Dreamwidth Update Page Fix
+// @namespace	http://tampermonkey.net/
+// @version	  	2024-07-17
+// @description See https://github.com/mapsedge/dreamwidth-monkey-update/blob/main/README.md for full details
+// @author	   	Bill in KCMO
+// @match		https://www.dreamwidth.org/*
+// @require     https://code.jquery.com/jquery-3.7.1.min.js
+// @require     https://code.jquery.com/ui/1.14.1/jquery-ui.min.js
+// @icon		https://www.google.com/s2/favicons?sz=64&domain=dreamwidth.org
+// @grant		none
 // ==/UserScript==
 
 function tm_savedraft (){
-    const doc = window.document;
-    console.log(window);
-    console.log(document);
-    console.log(doc);
-    const s = doc.querySelector('select#security');
-    console.log(s);
+	const doc = window.document;
+	console.log(window);
+	console.log(document);
+	console.log(doc);
+	const s = doc.querySelector('select#security');
+	console.log(s);
 }
+
 
 (function () {
 
-        const user = Site.currentJournal;
+//	const Site = Site;
+//	const user = Site.currentJournal;
 
-    function createJournalIconLink() {
-        let a = [];
-        a['user'] = document.createElement("a");
-        a['user'].classList.add('journalName');
-        a['user'].classList.add('specialpad');
-        a['user'].href = `https://${user}.dreamwidth.org/`;
-        a['user'].innerText = Site.currentJournal;
-        a['profile'] = document.createElement("a");
-        a['profile'].classList.add('specialpad');
-        a['profile'].href = `https://${user}.dreamwidth.org/profile`;
-        let i = document.createElement("img");
-        i.src = 'https://www.dreamwidth.org/img/silk/identity/user.png';
-        i.alt = '[personal profile]';
-        i.classList.add('journalIcon')
-        i.classList.add('ContextualPopup')
-        i.style.verticalAlign = 'text-bottom';
-        a['profile'].appendChild(i);
-        let c = document.createElement('span');
-        c.setAttribute('lj:user', user);
-        c.classList.add("ljuser");
-        c.appendChild(a['profile']);
-        c.appendChild(a['user']);
-        return c;
-    }
+	var dw_tampering = (function () {
 
-    // Function to create list items with links
-    function createListItem(text, href, floatRight = false, icon, fn) {
-        const li = document.createElement('li');
-        if (floatRight) li.style.float = 'right';
-        if (typeof href != 'undefined') {
-            let i = '';
-            if (icon) {
-                i = `<span class="material-symbols-outlined">${icon}</span>`;
-            }
-            const a = document.createElement('a');
-            a.href = href;
-            a.innerHTML = i + text;
+		// defined within the local scope
+		var privateMethod1 = function () { /* ... */ }
+		var privateProperty1 = 'foobar';
 
-            li.appendChild(a);
-        } else {
-            li.appendChild(text);
+		return {
+
+			//nested namespace with public properties
+			properties:{
+				publicProperty1: privateProperty1
+			},
+			//--------------------------------------------------------------------------------
+			getFormattedTimestamp: function() {
+				let now = new Date();
+				return now.getFullYear().toString().slice(2) +
+				String(now.getMonth() + 1).padStart(2, '0') +
+				String(now.getDate()).padStart(2, '0') +
+				String(now.getHours()).padStart(2, '0') +
+				String(now.getMinutes()).padStart(2, '0') +
+				String(now.getSeconds()).padStart(2, '0');
+			},
+			//--------------------------------------------------------------------------------
+			loadImageList: async function(imgtxt, okayButton){
+				imgtxt = $(imgtxt);
+				let images = await dw_tampering.getImageList(); // Wait for getImageList to finish
+				let a = $(imgtxt).parent();
+				let b = $('<span class="material-symbols-outlined dw-span-dropdown" id="dw-span-dropdown">arrow_drop_down</span>');
+				b.on("click", function(){
+					$("#dw-images-dropdown").addClass('open');
+				});
+				a.append(b);
+				imgtxt = document.querySelector('#txtURL');
+				let btn = document.querySelector('#dw-span-dropdown');
+
+				let parentDoc = window.parent.document;
+				let btnOk = parentDoc.querySelector("#btnOk");
+
+
+				// Get the position of imgtxt within its parent
+				let rect = imgtxt.getBoundingClientRect();
+
+				// Position btn at the upper-right corner of imgtxt, subtracting btn width + 2
+				btn.style.position = 'absolute';
+				btn.style.right = `10px`;
+				btn.style.top = `16px`;
+
+				let ul = $('<ul id="dw-images-dropdown" class="dropdown-default">');
+				$(images).each((a, b) => {
+					let li = $("<li>");
+					li.html(b.title);
+					li.attr('value', b.href);
+					ul.append(li);
+					li.on("click", function(){
+						imgtxt.value = $(this).attr('value');
+						$(imgtxt).trigger('blur');
+						$("#txtAlt").val($(this).html());
+						ul.removeClass("open");
+						console.log("[619794] \$(btnOk)", $(btnOk));
+						$(btnOk).show().css("visibility", "visible");
+					});
+				});
+				a.append(ul);
+				dw_tampering.getNewStyles(a);
+			},
+			//--------------------------------------------------------------------------------
+			getImageList: async function() {
+				return fetch('/file/list')
+				.then(response => response.text())
+				.then(html => {
+					let parser = new DOMParser();
+					let doc = parser.parseFromString(html, 'text/html');
+					let inputs = doc.querySelectorAll("#media-list .embed.row .embed-thumb input[type=text]");
+					return Array.from(inputs).map(input => {
+						let div = document.createElement('div');
+						div.innerHTML = input.value;
+						let a = div.querySelector('a');
+						let img = div.querySelector('img');
+						return a && img ? { title: img.title, href: a.href } : null;
+					}).filter(item => item);
+				});
+			},
+			//--------------------------------------------------------------------------------
+			getNewStyles: function (after){
+				let datestr = dw_tampering.getFormattedTimestamp();
+				let url = "https://raw.githubusercontent.com/mapsedge/dreamwidth-monkey-update/refs/heads/main/dreamwidth2025.css?" + datestr;
+				fetch(url)
+				.then(response => response.text())
+				.then(css => {
+					let style = document.createElement("style");
+					style.textContent = css;
+					if(after) {
+						after.append(style);
+					} else {
+						document.head.appendChild(style);
+					}
+				})
+				.catch(console.error);
+
+			}
+
+
+		}
+
+	})();
+
+
+
+	//--------------------------------------------------------------------------------
+	function defineNewNavbar(oldNavBar) {
+
+		const oldNavLinks = oldNavBar.querySelectorAll('a');
+		const oldNav = oldNavBar.closest('div.row');
+
+		// Create the new unordered list and list items
+		const nav = document.createElement('nav');
+		const ul = document.createElement('ul');
+		ul.id = 'tamper-nav';
+		ul.classList.add('clearfix');
+		nav.classList.add('new-navigation-style');
+
+		// Create new list items using the old links
+		ul.appendChild(createListItem(createJournalIconLink()));
+		if (!window.location.pathname.includes('/update')) {
+			ul.appendChild(createListItem('Post', '', false, 'rate_review', ));
+		} else {
+			ul.appendChild(createListItem('Save Draft', `#" onclick="tm_savedraft(); return false;`, false, 'save_as', 'tm_savedraft'));
+		}
+
+		ul.appendChild(createListItem('Reading Page', oldNavLinks[3].href, false, 'auto_stories'));
+		ul.appendChild(createListItem('Search', oldNavLinks[6].href, false, 'search'));
+		ul.appendChild(createListItem('Upload', "https://www.dreamwidth.org/file/new", false, 'upload'));
+
+		ul.appendChild(createListItem('Log Out', oldNavLinks[4].href, true, 'logout'));
+		ul.appendChild(createListItem('Site Map', oldNavLinks[8].href, true, 'map'));
+		ul.appendChild(createListItem('Settings', oldNavLinks[7].href, true, 'settings'));
+		nav.appendChild(ul);
+		// Replace the existing div[role=navigation] with the new ul
+		oldNav.parentElement.replaceChild(nav, oldNav);
+
+		// Create and append the style element
+		dw_tampering.getNewStyles();
+
+}
+
+
+	//--------------------------------------------------------------------------------
+	function createJournalIconLink() {
+		let a = [];
+
+		let user = Site && Site.user || 'mapsedge';
+		a.user = document.createElement("a");
+		a.user.classList.add('journalName');
+		a.user.classList.add('specialpad');
+		a.user.href = `https://${user}.dreamwidth.org/`;
+		a.user.innerText = user;
+		a.profile = document.createElement("a");
+		a.profile.classList.add('specialpad');
+		a.profile.href = `https://${user}.dreamwidth.org/profile`;
+		let i = document.createElement("img");
+		i.src = 'https://www.dreamwidth.org/img/silk/identity/user.png';
+		i.alt = '[personal profile]';
+		i.classList.add('journalIcon');
+		i.classList.add('ContextualPopup');
+		i.style.verticalAlign = 'text-bottom';
+		a.profile.appendChild(i);
+		let c = document.createElement('span');
+		c.setAttribute('lj:user', user);
+		c.classList.add("ljuser");
+		c.appendChild(a.profile);
+		c.appendChild(a.user);
+
+		return c;
+	}
+
+	//--------------------------------------------------------------------------------
+	// Function to create list items with links
+	function createListItem(text, href, floatRight = false, icon, fn) {
+		const li = document.createElement('li');
+		if (floatRight) li.style.float = 'right';
+		if (typeof href != 'undefined') {
+			let i = '';
+			if (icon) {
+				i = `<span class="material-symbols-outlined">${icon}</span>`;
+			}
+			const a = document.createElement('a');
+			a.href = href;
+			a.innerHTML = i + text;
+
+			li.appendChild(a);
+		} else {
+			li.appendChild(text);
+		}
+		if(typeof fn != 'undefined') {
+			li.onclick = ()=>{
+				const doc = window.document;
+				const s = doc.querySelector('select#security');
+				s.focus();
+				s.value = 'private';
+				const b = doc.querySelector('input#formsubmit');
+				b.click();
+				setTimeout(()=>{
+					history.back()
+				}, 2000);
+			};
+		}
+
+		return li;
+	}
+
+
+
+	setTimeout(() => {
+		setTimeout(()=>{
+			$("#xToolbar > table:nth-child(3) > tbody > tr > td:nth-child(3) > div > img").click();
+		}
+		, 1000);
+
+		'use strict';
+		let span = document.querySelector("span[lj\\:user]");
+		let user = span ? span.getAttribute("lj:user") : null;
+		if(typeof Site == 'undefined') {
+			let Site = JSON.parse('{}');
+		}
+
+		const link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200';
+		document.head.appendChild(link);
+
+		// Get links from the existing div
+		const oldNavBar = document.querySelector('div.row div[role=navigation]');
+        if(typeof oldNavBar != 'undefined' && oldNavBar != null) {
+            defineNewNavbar(oldNavBar);
         }
-        if(typeof fn != 'undefined') {
-            li.onclick = ()=>{
-                const doc = window.document;
-                const s = doc.querySelector('select#security');
-                s.focus();
-                s.value = 'private';
-                const b = doc.querySelector('input#formsubmit');
-                b.click();
-                setTimeout(()=>{
-                    history.back()
-                }, 2000);
-            };
-        }
 
-        return li;
-    }
+		let img = document.querySelector("#tamper-nav img.journalIcon.ContextualPopup");
+		if (img) {
+			img.style.width = "auto";
+		}
 
-    setTimeout(() => {
+		let imgtxt = document.querySelector("#txtUrl");
+		if(imgtxt) {
+			dw_tampering.loadImageList(imgtxt);
+		}
 
-        'use strict';
-
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200';
-        document.head.appendChild(link);
-
-        // Create the new unordered list and list items
-        const nav = document.createElement('nav');
-        const ul = document.createElement('ul');
-        ul.id = 'tamper-nav';
-        ul.classList.add('clearfix');
-        nav.classList.add('new-navigation-style');
-
-        // Get links from the existing div
-        const oldNavBar = document.querySelector('div.row div[role=navigation]');
-        const oldNavLinks = oldNavBar.querySelectorAll('a');
-        const oldNav = oldNavBar.closest('div.row');
-
-        // Create new list items using the old links
-        ul.appendChild(createListItem(createJournalIconLink()));
-        if (!window.location.pathname.includes('/update')) {
-            ul.appendChild(createListItem('Post', '', false, 'rate_review', ));
-        } else {
-            ul.appendChild(createListItem('Save Draft', `#" onclick="tm_savedraft(); return false;`, false, 'save_as', 'tm_savedraft'));
-        }
-
-        ul.appendChild(createListItem('Reading Page', oldNavLinks[3].href, false, 'auto_stories'));
-        ul.appendChild(createListItem('Search', oldNavLinks[6].href, false, 'search'));
-        ul.appendChild(createListItem('Log Out', oldNavLinks[4].href, true, 'logout'));
-        ul.appendChild(createListItem('Site Map', oldNavLinks[8].href, true, 'map'));
-        ul.appendChild(createListItem('Settings', oldNavLinks[7].href, true, 'settings'));
-        nav.appendChild(ul);
-        // Replace the existing div[role=navigation] with the new ul
-        oldNav.parentElement.replaceChild(nav, oldNav);
-
-        // Create and append the style element
-        const style = document.createElement('style');
-        style.textContent = `
-#tamper-nav li {
-    float: left;
-    position: relative;
-}
-
-#tamper-nav li a {
-    color: black;
-    text-decoration: none;
-}
-
-#tamper-nav li a:not(.specialpad) {
-    padding: .5rem 1rem;
-    color: black;clear
-}
-
-#tamper-nav li:not(:first-child):not(:nth-child(6))::before {
-    content: "|";
-}
-
-#tamper-nav li.right {
-    float: right;
-}
-
-a.journalName {
-    font-weight: bold;
-    color: blue;
-    padding-right: 1em;
-    padding-left: .3rem;
-    transform: translateY(-.2rem);
-  display: inline-block;
-}
-}
-
-i.journalIcon {
-    width: 17px;
-    height: 17px;
-    vertical-align: text-bottom;
-    border: 0;
-    padding-right: .5em;
-}
-
-span.ljuser {
-    white-space: nowrap;
-}
-
-.new-navigation-style {
-    font-family: sans-serif;
-    font-size: .65rem;
-    background: linear-gradient(to bottom, #eee, #eee, #ccc);
-    box-shadow: 0 0 .5rem 4px rgba(0,0,0, .3);
-    border-bottom: 1px solid gray;
-    margin: 0;
-    padding: 0;
-    top: 0;
-    width: 100vw;
-    box-sizing: border-box;
-    position: fixed;
-    li {
-        list-style-type: none;
-    }
-}
-
-.material-symbols-outlined {
-    font-size: 12px;
-    margin: 0 .3rem 0 0;
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 20
-}
-
-#content {
-    margin-top: 3rem;
-    margin-left: 1rem;
-}
-
-.clearfix::after {
-  content: "";
-  clear: both;
-  display: table;
-}
-
-
-body {
-    margin: 0;
-    padding: 0;
-}
-
-`;
-        document.head.appendChild(style);
-    }, 100);
+	}, 200);
 })();
-
-
