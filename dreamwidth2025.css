@@ -17,9 +17,11 @@
 	height: 6rem;
 	border: 1px solid black;
 	outline: 0;
+	overflow: scroll;
 }
 #dw-images-dropdown li {
 	padding: .2rem;
+	cursor: pointer;
 }
 
 #tamper-nav li {
