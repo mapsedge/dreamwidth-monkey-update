@@ -83,6 +83,7 @@ span.ljuser {
 	width: 100vw;
 	box-sizing: border-box;
 	position: fixed;
+	transition: all .5s;
 	li {
 		list-style-type: none;
 	}
@@ -122,4 +123,6 @@ body {
 	padding: 0;
 }
 
-
+div[role='main']#content {
+	margin-top: 0;
+}
