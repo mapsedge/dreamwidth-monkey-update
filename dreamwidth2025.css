@@ -122,7 +122,3 @@ body {
 	margin: 0;
 	padding: 0;
 }
-
-div[role='main']#content {
-	margin-top: 0;
-}
