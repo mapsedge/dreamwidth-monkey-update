@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name 		Dreamwidth Update Page Fix
 // @namespace	http://tampermonkey.net/
-// @version	  	2024-07-17
+// @version	  	2025-06-01
+// @require https://code.jquery.com/jquery-3.6.0.min.js
 // @description See https://github.com/mapsedge/dreamwidth-monkey-update/blob/main/README.md for full details
 // @author	   	Bill in KCMO
 // @match		https://www.dreamwidth.org/*
@@ -29,10 +30,6 @@ function tm_savedraft (){
 
 		return {
 
-			//nested namespace with public properties
-			properties:{
-				publicProperty1: privateProperty1
-			},
 			//--------------------------------------------------------------------------------
 			getFormattedTimestamp: function() {
 				let now = new Date();
